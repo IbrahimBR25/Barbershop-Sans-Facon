@@ -1,27 +1,27 @@
 import type { ReactNode } from "react";
 
+/** En-tête de section : numéro, libellé, grand titre et texte d'introduction. */
 export function SectionHeading({
+  index,
   eyebrow,
   title,
   intro,
-  align = "center",
 }: {
+  index: string;
   eyebrow: string;
   title: ReactNode;
   intro?: ReactNode;
-  align?: "center" | "left";
 }) {
-  const centered = align === "center";
   return (
-    <div className={centered ? "mx-auto max-w-2xl text-center" : "max-w-xl"}>
-      <p className="eyebrow">{eyebrow}</p>
-      <h2 className="mt-5 text-4xl font-light sm:text-5xl lg:text-[3.4rem]">{title}</h2>
-      {centered && (
-        <div className="ornament mt-7" aria-hidden>
-          <span />
-        </div>
-      )}
-      {intro && <p className={`text-sand ${centered ? "mt-7" : "mt-6"}`}>{intro}</p>}
+    <div>
+      <div className="flex items-baseline gap-5 border-t border-line pt-5">
+        <span className="index">{index}</span>
+        <span className="eyebrow">{eyebrow}</span>
+      </div>
+      <div className="mt-10 grid gap-8 lg:mt-14 lg:grid-cols-[1.4fr_1fr] lg:items-end lg:gap-20">
+        <h2 className="text-5xl sm:text-6xl lg:text-[4.75rem]">{title}</h2>
+        {intro && <p className="max-w-md text-sand lg:pb-2">{intro}</p>}
+      </div>
     </div>
   );
 }

@@ -10,24 +10,24 @@ export function MobileBar() {
       <a
         href={`tel:${site.contact.phoneE164}`}
         aria-label="Appeler le salon"
-        className="flex h-14 w-14 shrink-0 items-center justify-center border-r border-line text-gold-soft"
+        className="flex h-14 w-14 shrink-0 items-center justify-center border-r border-line text-ivory"
       >
-        <PhoneIcon />
+        <PhoneIcon width={18} height={18} />
       </a>
       <a
         href={contactLink()}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Écrire sur WhatsApp"
-        className="flex h-14 w-14 shrink-0 items-center justify-center border-r border-line text-gold-soft"
+        className="flex h-14 w-14 shrink-0 items-center justify-center border-r border-line text-ivory"
       >
-        <WhatsAppIcon />
+        <WhatsAppIcon width={18} height={18} />
       </a>
       <Link
         href="/#reserver"
-        className="flex h-14 flex-1 items-center justify-center bg-gold text-xs font-medium uppercase tracking-[0.24em] text-ink"
+        className="flex h-14 flex-1 items-center justify-center bg-ivory text-[0.71875rem] font-medium uppercase tracking-[0.18em] text-ink"
       >
-        Réserver un créneau
+        Réserver
       </Link>
     </div>
   );

@@ -106,7 +106,7 @@ export function Monogram({ className = "" }: { className?: string }) {
   return (
     <span
       aria-hidden
-      className={`inline-flex h-14 w-14 items-center justify-center rounded-full border border-gold/60 font-display text-xl italic text-gold-soft ${className}`}
+      className={`inline-flex h-14 w-14 items-center justify-center rounded-full border border-line font-display text-2xl italic text-ivory ${className}`}
     >
       SF
     </span>

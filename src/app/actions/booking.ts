@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getPack, site } from "@/config/site";
 import { createRequest, findRecentDuplicate } from "@/lib/bookings";
 import { nowTimeInTz, todayInTz } from "@/lib/dates";
+import { partyDuration } from "@/lib/party";
 import { isRateLimited } from "@/lib/ratelimit";
 import { anonymize, clientIpHash } from "@/lib/request";
 import { field, fieldErrors, requestSchema, type FieldErrors } from "@/lib/validation";
@@ -31,6 +32,7 @@ export async function submitRequest(_prev: RequestState, formData: FormData): Pr
     date: field(formData, "date"),
     time: field(formData, "time"),
     message: field(formData, "message"),
+    party: field(formData, "party"),
   });
   if (!parsed.success) {
     return { errors: fieldErrors(parsed.error) };
@@ -73,12 +75,18 @@ export async function submitRequest(_prev: RequestState, formData: FormData): Pr
       (await createRequest({
         name: input.name,
         phone: input.phone,
-        packId: input.packId,
+        // En groupe, la formule principale est celle du marié (ou de la première personne).
+        packId: input.party
+          ? (input.party.find((m) => m.role === "marie") ?? input.party[0]).packId
+          : input.packId,
         requestedDate: input.date,
         requestedTime: input.time,
         message: input.message,
-        durationMin: getPack(input.packId)?.durationMin ?? 60,
+        durationMin: input.party
+          ? partyDuration(input.party)
+          : (getPack(input.packId)?.durationMin ?? 60),
         ipHash,
+        party: input.party,
       }));
     token = booking.token;
   } catch (error) {

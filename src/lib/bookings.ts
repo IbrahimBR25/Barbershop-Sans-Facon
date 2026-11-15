@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes, randomInt } from "node:crypto";
 import { db } from "@/lib/db";
 import { addMinutes, timeToMinutes } from "@/lib/dates";
+import type { PartyMember } from "@/lib/party";
 
 export type BookingStatus = "pending" | "confirmed" | "cancelled";
 
@@ -21,6 +22,8 @@ export type Booking = {
   durationMin: number;
   adminNote: string | null;
   source: "web" | "admin";
+  /** Le Cortège : personnes du groupe, ou `null` pour une réservation individuelle. */
+  party: PartyMember[] | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -41,6 +44,7 @@ type Row = {
   duration_min: number;
   admin_note: string | null;
   source: "web" | "admin";
+  party: PartyMember[] | null;
   created_at: Date;
   updated_at: Date;
 };
@@ -62,6 +66,7 @@ function toBooking(r: Row): Booking {
     durationMin: r.duration_min,
     adminNote: r.admin_note,
     source: r.source,
+    party: Array.isArray(r.party) ? r.party : null,
     createdAt: r.created_at.toISOString(),
     updatedAt: r.updated_at.toISOString(),
   };
@@ -76,7 +81,7 @@ function cols() {
     message, status,
     confirmed_date::text as confirmed_date,
     to_char(confirmed_time, 'HH24:MI') as confirmed_time,
-    duration_min, admin_note, source, created_at, updated_at
+    duration_min, admin_note, source, party, created_at, updated_at
   `;
 }
 
@@ -104,6 +109,7 @@ export type NewBooking = {
   message: string | null;
   durationMin: number;
   ipHash: string | null;
+  party: PartyMember[] | null;
 };
 
 /** Demande envoyée depuis le site : toujours « en attente ». */
@@ -111,11 +117,11 @@ export async function createRequest(input: NewBooking): Promise<Booking> {
   const sql = db();
   const rows = await sql<Row[]>`
     insert into bookings
-      (ref, token, name, phone, pack_id, requested_date, requested_time, message, duration_min, ip_hash, source)
+      (ref, token, name, phone, pack_id, requested_date, requested_time, message, duration_min, ip_hash, source, party)
     values
       (${newRef()}, ${newToken()}, ${input.name}, ${input.phone}, ${input.packId},
        ${input.requestedDate}, ${input.requestedTime}, ${input.message}, ${input.durationMin},
-       ${input.ipHash}, 'web')
+       ${input.ipHash}, 'web', ${input.party ? sql.json(input.party) : null})
     returning ${cols()}
   `;
   return toBooking(rows[0]);

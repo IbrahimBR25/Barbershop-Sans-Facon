@@ -159,6 +159,26 @@ export const site = {
     },
   ] as Pack[],
 
+  /**
+   * Le Cortège : réservation de groupe (le marié et ses proches).
+   * `offer` s'affiche tel quel sur le site. À COMPLÉTER selon la politique tarifaire.
+   */
+  cortege: {
+    enabled: true,
+    title: "Le Cortège",
+    tagline: "Le marié et ses proches, prêts ensemble.",
+    intro:
+      "Réservez pour tout le groupe en une seule demande. Chacun choisit sa formule, nous organisons les passages pour que tout le monde soit prêt à l'heure.",
+    offer: "Tarif de groupe préférentiel à partir de 3 personnes.",
+    perks: [
+      "Une seule demande pour tout le groupe",
+      "Une formule par personne",
+      "Passages organisés le jour même ou la veille",
+    ],
+    /** Nombre maximum de personnes, marié compris. */
+    maxMembers: 10,
+  },
+
   /** Carte des soins à l'unité. À COMPLÉTER (prix). */
   services: [
     { name: "Coupe", detail: "Ciseaux ou tondeuse, coiffage", priceTnd: null },
@@ -209,8 +229,8 @@ export const site = {
       a: "Oui, un simple appel ou message suffit. Merci de nous prévenir au moins 24 h à l'avance.",
     },
     {
-      q: "Proposez-vous des formules pour le marié et ses proches ?",
-      a: "Oui. Précisez-le dans votre demande et nous préparons une proposition pour le groupe.",
+      q: "Peut-on réserver pour le marié et ses proches ?",
+      a: "Oui, c'est Le Cortège. Dans le formulaire, choisissez « Le Cortège », ajoutez chaque personne avec sa formule, et envoyez une seule demande pour tout le groupe.",
     },
   ],
 } as const satisfies Record<string, unknown>;

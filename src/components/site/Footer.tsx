@@ -3,34 +3,35 @@ import { site } from "@/config/site";
 
 export function Footer() {
   return (
-    <footer className="border-t border-line-soft pb-28 pt-14 text-center md:pb-14">
+    <footer className="overflow-hidden border-t border-line-soft pb-28 pt-16 md:pb-12">
       <div className="container-x">
-        <p className="font-display text-3xl tracking-[0.14em]">
-          Sans <span className="display-italic">Façon</span>
-        </p>
-        <p className="eyebrow mt-4">
-          {site.baseline} · {site.contact.city}
-        </p>
-        <div className="ornament mt-8" aria-hidden>
-          <span />
+        <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <nav aria-label="Pied de page" className="flex flex-wrap gap-x-8 gap-y-3">
+            {[
+              { href: "/#formules", label: "Formules" },
+              { href: "/#cortege", label: site.cortege.title },
+              { href: "/#reserver", label: "Réserver" },
+              { href: "/confidentialite", label: "Confidentialité" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-[0.6875rem] uppercase tracking-[0.18em] text-sand transition-colors hover:text-ivory"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+          <p className="text-xs text-stone">
+            © {site.name} — {site.baseline}, {site.contact.city}
+          </p>
         </div>
-        <nav aria-label="Pied de page" className="mt-8 flex flex-wrap justify-center gap-x-8 gap-y-3">
-          {[
-            { href: "/#formules", label: "Formules" },
-            { href: "/#reserver", label: "Réserver" },
-            { href: "/#contact", label: "Contact" },
-            { href: "/confidentialite", label: "Confidentialité" },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-[0.6875rem] uppercase tracking-[0.24em] text-stone transition-colors hover:text-gold-soft"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <p className="mt-8 text-xs text-stone">© {site.name}. Tous droits réservés.</p>
+        <p
+          aria-hidden
+          className="mt-14 select-none whitespace-nowrap font-display text-[22vw] leading-[0.8] tracking-[-0.03em] text-ivory/[0.06] md:text-[17vw]"
+        >
+          Sans Façon
+        </p>
       </div>
     </footer>
   );

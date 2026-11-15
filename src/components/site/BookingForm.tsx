@@ -8,12 +8,20 @@ import {
   bookingSlots,
   formatDateLong,
   formatDayNumber,
+  formatDuration,
   formatMonth,
   formatWeekday,
   isClosedDay,
   nowTimeInTz,
   todayInTz,
 } from "@/lib/dates";
+import {
+  COMPANION_ROLES,
+  PARTY_ROLES,
+  partyDuration,
+  type PartyMember,
+  type PartyRole,
+} from "@/lib/party";
 
 const noopSubscribe = () => () => {};
 
@@ -35,26 +43,43 @@ function ErrorText({ id, text }: { id: string; text?: string }) {
   );
 }
 
+type Mode = "solo" | "group";
+
+const initialParty: PartyMember[] = [
+  { role: "marie", packId: "marie" },
+  { role: "temoin", packId: null },
+];
+
 export function BookingForm() {
   const [state, formAction, pending] = useActionState<RequestState, FormData>(submitRequest, null);
   const today = useToday();
 
+  const [mode, setMode] = useState<Mode>("solo");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [packId, setPackId] = useState("");
+  const [party, setParty] = useState<PartyMember[]>(initialParty);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [message, setMessage] = useState("");
   const [otherDate, setOtherDate] = useState(false);
 
-  // Présélection depuis les boutons « Choisir cette formule ».
+  // Présélection depuis les liens « Choisir » et « Réserver pour le cortège ».
   useEffect(() => {
     const onPack = (event: Event) => {
       const id = (event as CustomEvent<string>).detail;
-      if (site.packs.some((p) => p.id === id)) setPackId(id);
+      if (site.packs.some((p) => p.id === id)) {
+        setMode("solo");
+        setPackId(id);
+      }
     };
+    const onCortege = () => setMode("group");
     window.addEventListener("sf:pack", onPack);
-    return () => window.removeEventListener("sf:pack", onPack);
+    window.addEventListener("sf:cortege", onCortege);
+    return () => {
+      window.removeEventListener("sf:pack", onPack);
+      window.removeEventListener("sf:cortege", onCortege);
+    };
   }, []);
 
   const quickDays = useMemo(() => {
@@ -79,6 +104,8 @@ export function BookingForm() {
 
   const errors = state?.errors ?? {};
   const maxDate = today ? addDays(today, site.booking.maxDaysAhead) : undefined;
+  const group = mode === "group" && site.cortege.enabled;
+  const maxMembers = site.cortege.maxMembers;
 
   function dayLabel(d: string): string {
     if (d === today) return "Auj.";
@@ -86,8 +113,17 @@ export function BookingForm() {
     return formatWeekday(d, "short").replace(".", "");
   }
 
+  function updateMember(index: number, patch: Partial<PartyMember>) {
+    setParty((list) => list.map((m, i) => (i === index ? { ...m, ...patch } : m)));
+  }
+
+  function roleOptions(index: number): PartyRole[] {
+    const groomTaken = party.some((m, i) => m.role === "marie" && i !== index);
+    return groomTaken ? COMPANION_ROLES : (Object.keys(PARTY_ROLES) as PartyRole[]);
+  }
+
   return (
-    <form action={formAction} className="card min-w-0 p-6 sm:p-10" noValidate>
+    <form action={formAction} className="min-w-0 border border-line bg-ink p-6 sm:p-10" noValidate>
       {/* Champ piège anti-robots : ne pas remplir. */}
       <div className="sr-only-field" aria-hidden>
         <label>
@@ -97,6 +133,22 @@ export function BookingForm() {
       </div>
       <input type="hidden" name="date" value={date} />
       <input type="hidden" name="time" value={time} />
+      <input type="hidden" name="party" value={group ? JSON.stringify(party) : ""} />
+      {group && <input type="hidden" name="packId" value="" />}
+
+      {site.cortege.enabled && (
+        <fieldset className="mb-8">
+          <legend className="label">Pour qui ?</legend>
+          <div className="segmented">
+            <button type="button" aria-pressed={!group} onClick={() => setMode("solo")}>
+              Pour moi
+            </button>
+            <button type="button" aria-pressed={group} onClick={() => setMode("group")}>
+              {site.cortege.title}
+            </button>
+          </div>
+        </fieldset>
+      )}
 
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
@@ -142,31 +194,101 @@ export function BookingForm() {
             <ErrorText id="bf-phone-err" text={errors.phone} />
           ) : (
             <p id="bf-phone-hint" className="mt-2 text-[0.8125rem] text-stone">
-              C&apos;est sur ce numéro que nous vous appelons.
+              Nous vous appelons sur ce numéro.
             </p>
           )}
         </div>
       </div>
 
-      <div className="mt-6">
-        <label htmlFor="bf-pack" className="label">
-          Formule
-        </label>
-        <select
-          id="bf-pack"
-          name="packId"
-          className="input"
-          value={packId}
-          onChange={(e) => setPackId(e.target.value)}
-        >
-          <option value="">Je ne sais pas encore</option>
-          {site.packs.map((pack) => (
-            <option key={pack.id} value={pack.id}>
-              {pack.name} — {pack.tagline}
-            </option>
-          ))}
-        </select>
-      </div>
+      {group ? (
+        <fieldset className="mt-8 min-w-0" aria-describedby={errors.party ? "bf-party-err" : undefined}>
+          <legend className="label">Le groupe</legend>
+          <ol className="border-t border-line">
+            {party.map((member, i) => (
+              <li key={i} className="grid grid-cols-[1.75rem_1fr_auto] items-center gap-3 border-b border-line py-3">
+                <span className="index">{String(i + 1).padStart(2, "0")}</span>
+                <div className="grid min-w-0 gap-2 sm:grid-cols-2">
+                  <label className="sr-only" htmlFor={`bf-role-${i}`}>
+                    Personne {i + 1}
+                  </label>
+                  <select
+                    id={`bf-role-${i}`}
+                    className="input min-h-[2.9rem] py-2"
+                    value={member.role}
+                    onChange={(e) => updateMember(i, { role: e.target.value as PartyRole })}
+                  >
+                    {roleOptions(i).map((r) => (
+                      <option key={r} value={r}>
+                        {PARTY_ROLES[r]}
+                      </option>
+                    ))}
+                  </select>
+                  <label className="sr-only" htmlFor={`bf-mpack-${i}`}>
+                    Formule de la personne {i + 1}
+                  </label>
+                  <select
+                    id={`bf-mpack-${i}`}
+                    className="input min-h-[2.9rem] py-2"
+                    value={member.packId ?? ""}
+                    onChange={(e) => updateMember(i, { packId: e.target.value || null })}
+                  >
+                    <option value="">Formule à définir</option>
+                    {site.packs.map((pack) => (
+                      <option key={pack.id} value={pack.id}>
+                        {pack.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center text-xl leading-none text-stone transition-colors hover:text-ivory disabled:opacity-20"
+                  aria-label={`Retirer la personne ${i + 1}`}
+                  disabled={party.length <= 2}
+                  onClick={() => setParty((list) => list.filter((_, j) => j !== i))}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ol>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+            <button
+              type="button"
+              className="link-line disabled:opacity-30"
+              disabled={party.length >= maxMembers}
+              onClick={() => setParty((list) => [...list, { role: "temoin", packId: null }])}
+            >
+              + Ajouter une personne
+            </button>
+            <p className="text-sm text-sand">
+              {party.length} personnes · environ {formatDuration(partyDuration(party))}
+            </p>
+          </div>
+          <ErrorText id="bf-party-err" text={errors.party} />
+          {site.cortege.offer && <p className="mt-4 text-[0.8125rem] text-stone">{site.cortege.offer}</p>}
+        </fieldset>
+      ) : (
+        <div className="mt-6">
+          <label htmlFor="bf-pack" className="label">
+            Formule
+          </label>
+          <select
+            id="bf-pack"
+            name="packId"
+            className="input"
+            value={packId}
+            onChange={(e) => setPackId(e.target.value)}
+          >
+            <option value="">Je ne sais pas encore</option>
+            {site.packs.map((pack) => (
+              <option key={pack.id} value={pack.id}>
+                {pack.name} — {pack.tagline}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <fieldset className="mt-8 min-w-0" aria-describedby={errors.date ? "bf-date-err" : undefined}>
         <legend className="label">Jour souhaité</legend>
@@ -189,7 +311,7 @@ export function BookingForm() {
                     setDate(d);
                   }}
                 >
-                  <span className="text-[0.6875rem] uppercase tracking-[0.14em]">{dayLabel(d)}</span>
+                  <span className="text-[0.625rem] uppercase tracking-[0.14em]">{dayLabel(d)}</span>
                   <span className="font-display text-lg leading-none">
                     {formatDayNumber(d)} {formatMonth(d, "short")}
                   </span>
@@ -227,7 +349,7 @@ export function BookingForm() {
       </fieldset>
 
       <fieldset className="mt-7 min-w-0" aria-describedby={errors.time ? "bf-time-err" : undefined}>
-        <legend className="label">Heure souhaitée</legend>
+        <legend className="label">{group ? "Heure de début souhaitée" : "Heure souhaitée"}</legend>
         <div className="grid grid-cols-4 gap-2 sm:flex sm:flex-wrap">
           <button
             type="button"
@@ -262,7 +384,7 @@ export function BookingForm() {
           className="input min-h-[5.5rem] resize-y"
           rows={2}
           maxLength={300}
-          placeholder="Ex. : mariage le 28 novembre"
+          placeholder={group ? "Ex. : mariage le 28 novembre, nous serons 4" : "Ex. : mariage le 28 novembre"}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           aria-invalid={errors.message ? true : undefined}
@@ -270,12 +392,8 @@ export function BookingForm() {
         <ErrorText id="bf-message-err" text={errors.message} />
       </div>
 
-      <p className="mt-8 flex gap-3 border border-line bg-ink/60 px-4 py-3.5 text-[0.9375rem] text-ivory">
-        <span aria-hidden className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rotate-45 bg-gold" />
-        <span>
-          Ce créneau est un <strong className="font-medium text-gold-soft">souhait</strong>. Il
-          n&apos;est confirmé qu&apos;après notre appel.
-        </span>
+      <p className="mt-8 border-l border-gold pl-4 text-[0.9375rem] text-ivory">
+        Ce créneau est un souhait. Il n&apos;est confirmé qu&apos;après notre appel.
       </p>
 
       {state?.message && (
@@ -284,8 +402,8 @@ export function BookingForm() {
         </p>
       )}
 
-      <button type="submit" className="btn btn-gold mt-6 w-full" disabled={pending}>
-        {pending ? "Envoi en cours…" : "Envoyer ma demande"}
+      <button type="submit" className="btn btn-gold mt-7 w-full" disabled={pending}>
+        {pending ? "Envoi en cours…" : group ? "Envoyer la demande du cortège" : "Envoyer ma demande"}
       </button>
       <p className="mt-4 text-center text-[0.8125rem] text-stone">
         Vos coordonnées servent uniquement à vous rappeler.

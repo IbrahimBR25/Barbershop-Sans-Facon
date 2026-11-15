@@ -17,6 +17,11 @@ Built with Next.js 16 (App Router), Tailwind CSS 4 and Postgres (Supabase).
    and an "add to my calendar" button. The owner can also send a ready-made WhatsApp
    confirmation.
 
+**Le Cortège (group booking):** in the form, "Le Cortège" switches to group mode. The client
+adds each person (groom, best man, brother…) with their own package, up to 10 people, and
+sends one request. The WhatsApp message, the tracking page and the owner area all show the
+full group. The group offer text is set in `cortege` in the content file.
+
 Because the request is saved before WhatsApp opens, nothing is lost if the customer
 never taps "send": it still shows up in the owner's admin area.
 
@@ -31,6 +36,7 @@ Everything that will change lives in **one file**: [`src/config/site.ts`](src/co
 | Bookable time slots, closed days | `booking` |
 | Instagram, Facebook, TikTok links (empty string hides one) | `socials` |
 | Packages, their contents, duration and price | `packs` |
+| Le Cortège texts, group offer, max group size | `cortege` |
 | À la carte services and prices | `services` |
 | Photos of the salon | `gallery` |
 | Hero background photo or video | `hero` |
@@ -58,8 +64,8 @@ The site is at http://localhost:3000 and the owner area at http://localhost:3000
 ## Deploy (Supabase + Vercel)
 
 1. **Supabase**: create a project (region Paris, `eu-west-3`, is the closest to Tunisia).
-   Open the SQL Editor, paste the content of
-   [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) and run it.
+   Open the SQL Editor, paste the content of each file in
+   [`supabase/migrations/`](supabase/migrations/) in order (`0001`, then `0002`) and run it.
    Then open **Connect** and copy the **Transaction pooler** connection string (port 6543).
 2. **Secrets**: run `npm run hash-password` on your machine and choose the owner's
    password (12 characters minimum). Keep the three printed lines.

@@ -1,45 +1,56 @@
 import { site } from "@/config/site";
 import { BookingForm } from "@/components/site/BookingForm";
-import { PhoneIcon } from "@/components/ui/icons";
+
+const steps = [
+  ["Vous envoyez votre demande", "Le jour et l'heure qui vous arrangent. Trente secondes."],
+  ["Vous la transmettez sur WhatsApp", "Le message est déjà écrit. Un appui sur « Envoyer »."],
+  ["Nous vous appelons", "Nous fixons l'heure ensemble. C'est cet appel qui confirme."],
+];
 
 export function Booking() {
   return (
-    <section id="reserver" className="glow-top border-t border-line-soft py-24 sm:py-32">
-      <div className="container-x grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-        <div className="min-w-0 lg:sticky lg:top-32 lg:self-start">
-          <p className="eyebrow">Réservation</p>
-          <h2 className="mt-5 text-4xl font-light sm:text-5xl lg:text-[3.4rem]">
-            Demandez <span className="display-italic">votre créneau</span>
-          </h2>
-          <p className="mt-6 max-w-md text-sand">
-            Indiquez le jour et l&apos;heure qui vous conviennent. Nous vous rappelons pour fixer
-            le rendez-vous ensemble.
-          </p>
-
-          <ul className="mt-9 space-y-4 text-[0.9375rem] text-sand">
-            {[
-              "Aucun paiement en ligne",
-              "Réponse par téléphone, rapidement",
-              "Vous suivez l'état de votre demande sur une page dédiée",
-            ].map((item) => (
-              <li key={item} className="flex gap-3">
-                <span aria-hidden className="mt-[0.72em] h-px w-4 shrink-0 bg-gold" />
-                {item}
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-10 text-sm text-stone">Vous préférez appeler ?</p>
-          <a
-            href={`tel:${site.contact.phoneE164}`}
-            className="mt-2 inline-flex items-center gap-3 font-display text-3xl text-gold-soft transition-colors hover:text-gold"
-          >
-            <PhoneIcon width={22} height={22} />
-            {site.contact.phoneDisplay}
-          </a>
+    <section id="reserver" className="border-t border-line-soft bg-coal py-24 sm:py-32">
+      <div className="container-x">
+        <div className="flex items-baseline gap-5 border-t border-line pt-5">
+          <span className="index">04</span>
+          <span className="eyebrow">Réservation</span>
         </div>
 
-        <BookingForm />
+        <div className="mt-12 grid gap-14 lg:mt-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-24">
+          <div className="min-w-0 lg:sticky lg:top-28 lg:self-start">
+            <h2 className="text-5xl sm:text-6xl lg:text-[4.75rem]">
+              Demandez <span className="display-italic">votre créneau.</span>
+            </h2>
+
+            <ol className="mt-12 border-t border-line">
+              {steps.map(([title, text], i) => (
+                <li key={title} className="grid grid-cols-[2.5rem_1fr] border-b border-line py-5">
+                  <span className="index pt-1">{String(i + 1).padStart(2, "0")}</span>
+                  <div>
+                    <p className="text-ivory">{title}</p>
+                    <p className="mt-1 text-sm text-sand">{text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+
+            <p className="mt-8 border-l border-gold pl-4 text-[0.9375rem] text-ivory">
+              Votre créneau n&apos;est réservé qu&apos;après notre appel de confirmation.
+            </p>
+
+            <div className="mt-12">
+              <p className="eyebrow">Vous préférez appeler ?</p>
+              <a
+                href={`tel:${site.contact.phoneE164}`}
+                className="mt-3 inline-block font-display text-[2.2rem] leading-none transition-colors hover:text-gold-soft"
+              >
+                {site.contact.phoneDisplay}
+              </a>
+            </div>
+          </div>
+
+          <BookingForm />
+        </div>
       </div>
     </section>
   );

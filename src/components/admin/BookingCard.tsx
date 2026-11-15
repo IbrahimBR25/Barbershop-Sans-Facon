@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getPack } from "@/config/site";
+import { getPack, site } from "@/config/site";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { PartyList } from "@/components/site/PartyList";
 import { ArrowIcon, PhoneIcon } from "@/components/ui/icons";
 import type { Booking } from "@/lib/bookings";
 import { addMinutes, formatSlot } from "@/lib/dates";
@@ -13,8 +14,13 @@ export function BookingCard({ booking, now }: { booking: Booking; now: Date }) {
   return (
     <article className="card p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <StatusBadge status={booking.status} />
+          {booking.party && (
+            <span className="badge badge-pending">
+              {site.cortege.title} · {booking.party.length}
+            </span>
+          )}
           <span className="text-xs tabular-nums tracking-[0.12em] text-stone">{booking.ref}</span>
         </div>
         <span className="text-xs text-stone">
@@ -33,10 +39,19 @@ export function BookingCard({ booking, now }: { booking: Booking; now: Date }) {
               : formatSlot(booking.requestedDate, booking.requestedTime)}
           </dd>
         </div>
-        <div className="flex gap-3">
-          <dt className="w-20 shrink-0 text-stone">Formule</dt>
-          <dd className="text-sand">{pack ? pack.name : "À définir"}</dd>
-        </div>
+        {booking.party ? (
+          <div className="flex gap-3">
+            <dt className="w-20 shrink-0 text-stone">Groupe</dt>
+            <dd className="text-ivory">
+              <PartyList party={booking.party} compact />
+            </dd>
+          </div>
+        ) : (
+          <div className="flex gap-3">
+            <dt className="w-20 shrink-0 text-stone">Formule</dt>
+            <dd className="text-sand">{pack ? pack.name : "À définir"}</dd>
+          </div>
+        )}
         {booking.message && (
           <div className="flex gap-3">
             <dt className="w-20 shrink-0 text-stone">Précision</dt>

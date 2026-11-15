@@ -1,66 +1,81 @@
 import Link from "next/link";
 import { site } from "@/config/site";
-import { Monogram } from "@/components/ui/icons";
 
 export function Hero() {
   const { image, video } = site.hero;
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* Fond : vidéo ou photo si elles sont renseignées dans la config, sinon halo doré. */}
-      <div aria-hidden className="absolute inset-0 -z-10">
-        {video ? (
-          <video
-            className="h-full w-full object-cover opacity-40"
-            src={video}
-            poster={image || undefined}
-            autoPlay
-            muted
-            loop
-            playsInline
-          />
-        ) : image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="h-full w-full object-cover opacity-40" src={image} alt="" />
-        ) : null}
-        <div className="absolute inset-0 bg-[radial-gradient(70rem_36rem_at_50%_-6rem,#c9a96a26,transparent_68%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_55%,var(--color-ink))]" />
-      </div>
+    <section className="relative">
+      <div className="container-x grid min-h-[calc(100svh-4rem)] gap-12 pb-12 pt-14 sm:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[1.25fr_1fr] lg:gap-20 lg:pb-16 lg:pt-20">
+        <div className="flex flex-col justify-between gap-14">
+          <p className="eyebrow reveal">
+            {site.baseline} — {site.contact.city}
+          </p>
 
-      {/* Cadre fin */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-3 -z-10 border border-line-soft sm:inset-6"
-      />
-
-      <div className="container-x flex min-h-[calc(100svh-4rem)] flex-col items-center justify-center py-20 text-center sm:min-h-[calc(100svh-5rem)] sm:py-28">
-        <Monogram className="reveal mb-8" />
-        <p className="eyebrow reveal [animation-delay:120ms]">
-          {site.baseline} · {site.contact.city}
-        </p>
-
-        <h1 className="reveal mt-7 max-w-4xl text-[2.9rem] font-light leading-[1.02] [animation-delay:240ms] sm:text-7xl lg:text-[5.6rem]">
-          Le soin du détail,
-          <br />
-          <span className="display-italic">avant le grand jour.</span>
-        </h1>
-
-        <p className="reveal mx-auto mt-8 max-w-xl text-base text-sand [animation-delay:380ms] sm:text-lg">
-          Mariage, fiançailles, fête ou soirée : coupe, rasage traditionnel, soins du visage.
-          Vous vous installez, nous nous occupons de tout.
-        </p>
-
-        <div className="reveal mt-11 flex w-full flex-col items-center justify-center gap-4 [animation-delay:520ms] sm:w-auto sm:flex-row">
-          <Link href="#reserver" className="btn btn-gold w-full sm:w-auto">
-            Réserver un créneau
-          </Link>
-          <Link href="#formules" className="btn btn-ghost w-full sm:w-auto">
-            Découvrir les formules
-          </Link>
+          <div>
+            <h1 className="reveal text-[3.6rem] leading-[0.92] [animation-delay:120ms] sm:text-[6rem] lg:text-[7.6rem]">
+              L&apos;art de
+              <br />
+              <span className="display-italic">se préparer.</span>
+            </h1>
+            <p className="reveal mt-9 max-w-md text-[1.0625rem] text-sand [animation-delay:260ms]">
+              Coupe, rasage à la serviette chaude, soins du visage. Avant un mariage, une fête ou
+              un grand rendez-vous, vous vous installez. Nous nous occupons du reste.
+            </p>
+            <div className="reveal mt-11 flex flex-col gap-3 [animation-delay:400ms] sm:flex-row sm:items-center sm:gap-8">
+              <Link href="#reserver" className="btn btn-gold">
+                Réserver un créneau
+              </Link>
+              {site.cortege.enabled && (
+                <Link href="#cortege" className="link-line self-center sm:self-auto">
+                  {site.cortege.title} — réservation de groupe
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
 
-        <p className="reveal mt-9 text-[0.8125rem] text-stone [animation-delay:640ms]">
-          Réservation en 30 secondes · Confirmation par téléphone
-        </p>
+        {/* Visuel : vidéo ou photo si renseignées dans la config, sinon cadre sobre. */}
+        <div className="reveal relative min-h-[22rem] overflow-hidden border border-line-soft bg-panel [animation-delay:200ms] lg:min-h-0">
+          {video ? (
+            <video
+              className="absolute inset-0 h-full w-full object-cover"
+              src={video}
+              poster={image || undefined}
+              autoPlay
+              muted
+              loop
+              playsInline
+            />
+          ) : image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="absolute inset-0 h-full w-full object-cover" src={image} alt="" />
+          ) : (
+            <div aria-hidden className="absolute inset-0 flex items-center justify-center">
+              <span className="font-display text-[9rem] italic leading-none text-ivory/[0.07] sm:text-[12rem]">
+                SF
+              </span>
+            </div>
+          )}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between border-t border-line-soft bg-ink/40 px-5 py-4 backdrop-blur-sm">
+            <span className="eyebrow">Le salon</span>
+            <span className="eyebrow text-stone">{video || image ? site.contact.city : "Image à venir"}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="border-y border-line-soft">
+        <ul className="container-x grid grid-cols-1 divide-y divide-line-soft text-sm text-sand sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {[
+            ["Sur rendez-vous", "Une heure qui vous est réservée"],
+            ["Confirmation par téléphone", "Nous vous rappelons pour fixer l'heure"],
+            [site.cortege.title, "Le marié et ses proches, ensemble"],
+          ].map(([title, text]) => (
+            <li key={title} className="py-5 sm:px-6 sm:first:pl-0">
+              <span className="block text-ivory">{title}</span>
+              {text}
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

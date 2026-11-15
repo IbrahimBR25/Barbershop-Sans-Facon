@@ -1,5 +1,6 @@
 import { getPack, site } from "@/config/site";
 import { zonedToUtc } from "@/lib/dates";
+import { memberLabel } from "@/lib/party";
 import { formatPhone } from "@/lib/phone";
 import type { Booking } from "@/lib/bookings";
 
@@ -49,14 +50,18 @@ function eventLines(b: Booking, mode: EventMode): string[] {
 
   const summary =
     mode === "owner"
-      ? `${b.name}${pack ? ` — ${pack.name}` : ""}`
+      ? `${b.name}${b.party ? ` — ${site.cortege.title} (${b.party.length})` : pack ? ` — ${pack.name}` : ""}`
       : `Rendez-vous ${site.name}${pack ? ` — ${pack.name}` : ""}`;
 
   const description =
     mode === "owner"
       ? [
           `Tél. : ${formatPhone(b.phone)}`,
-          pack ? `Formule : ${pack.name}` : null,
+          b.party
+            ? `${site.cortege.title} (${b.party.length}) : ${b.party.map(memberLabel).join(" ; ")}`
+            : pack
+              ? `Formule : ${pack.name}`
+              : null,
           b.message ? `Client : ${b.message}` : null,
           b.adminNote ? `Note : ${b.adminNote}` : null,
           `Réf. ${b.ref}`,

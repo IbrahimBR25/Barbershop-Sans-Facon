@@ -35,7 +35,7 @@ export function PendingBanner() {
   );
   if (!token) return null;
   return (
-    <div className="border-b border-line bg-panel">
+    <div className="border-b border-line-soft bg-panel">
       <div className="container-x flex flex-wrap items-center justify-center gap-x-4 gap-y-1 py-3 text-center text-sm">
         <span className="text-sand">Vous avez une demande de rendez-vous en cours.</span>
         <Link href={`/reservation/${token}`} className="link-gold">

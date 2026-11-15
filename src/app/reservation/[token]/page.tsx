@@ -7,6 +7,7 @@ import { getPack, site } from "@/config/site";
 import { AutoRefresh } from "@/components/site/AutoRefresh";
 import { Footer } from "@/components/site/Footer";
 import { Header } from "@/components/site/Header";
+import { PartyList } from "@/components/site/PartyList";
 import { RememberBooking } from "@/components/site/PendingBanner";
 import { CalendarIcon, CheckIcon, PhoneIcon, PinIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { getByToken, type Booking } from "@/lib/bookings";
@@ -28,7 +29,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   return (
     <div className="flex flex-col gap-1 border-b border-line-soft py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
       <dt className="text-[0.6875rem] uppercase tracking-[0.24em] text-stone">{label}</dt>
-      <dd className="text-ivory sm:text-right">{children}</dd>
+      <dd className="text-ivory sm:text-right [&_ol]:text-left">{children}</dd>
     </div>
   );
 }
@@ -125,7 +126,13 @@ function Pending({ booking }: { booking: Booking }) {
           {formatSlot(booking.requestedDate, booking.requestedTime)}
           <span className="block text-sm text-gold-soft">Non confirmé</span>
         </Row>
-        <Row label="Formule">{pack ? pack.name : "À définir ensemble"}</Row>
+        {booking.party ? (
+          <Row label={`${site.cortege.title} · ${booking.party.length} personnes`}>
+            <PartyList party={booking.party} compact />
+          </Row>
+        ) : (
+          <Row label="Formule">{pack ? pack.name : "À définir ensemble"}</Row>
+        )}
         <Row label="Référence">
           <span className="tabular-nums tracking-[0.12em]">{booking.ref}</span>
         </Row>
@@ -171,7 +178,13 @@ function Confirmed({ booking }: { booking: Booking }) {
       <Steps current={3} />
 
       <dl className="card mt-10 px-6 sm:px-8">
-        <Row label="Formule">{pack ? pack.name : "À définir sur place"}</Row>
+        {booking.party ? (
+          <Row label={`${site.cortege.title} · ${booking.party.length} personnes`}>
+            <PartyList party={booking.party} compact />
+          </Row>
+        ) : (
+          <Row label="Formule">{pack ? pack.name : "À définir sur place"}</Row>
+        )}
         <Row label="Adresse">
           {site.contact.addressLines.join(", ")}
           {site.contact.mapsUrl && (

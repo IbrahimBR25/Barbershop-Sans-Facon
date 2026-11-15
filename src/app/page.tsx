@@ -1,5 +1,6 @@
 import { site } from "@/config/site";
 import { Booking } from "@/components/site/Booking";
+import { Cortege } from "@/components/site/Cortege";
 import { Faq } from "@/components/site/Faq";
 import { Footer } from "@/components/site/Footer";
 import { Gallery } from "@/components/site/Gallery";
@@ -9,7 +10,6 @@ import { Infos } from "@/components/site/Infos";
 import { MobileBar } from "@/components/site/MobileBar";
 import { Packs } from "@/components/site/Packs";
 import { PendingBanner } from "@/components/site/PendingBanner";
-import { Process } from "@/components/site/Process";
 import { Services } from "@/components/site/Services";
 
 /** Données structurées pour Google (fiche d'établissement). */
@@ -45,10 +45,10 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <Packs />
-        <Services />
-        <Process />
-        <Booking />
+        <Cortege />
         <Gallery />
+        <Services />
+        <Booking />
         <Infos />
         <Faq />
       </main>

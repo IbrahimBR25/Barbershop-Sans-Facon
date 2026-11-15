@@ -8,6 +8,7 @@ import {
   isTimeStr,
   todayInTz,
 } from "@/lib/dates";
+import { PARTY_ROLES, type PartyMember } from "@/lib/party";
 import { normalizePhone } from "@/lib/phone";
 
 /** Retire les caractères de contrôle et normalise les espaces. */
@@ -61,6 +62,44 @@ const optionalText = (max: number) =>
 const dateStr = z.string().refine(isDateStr, "Choisissez un jour.");
 const timeStr = z.string().refine(isTimeStr, "Heure invalide.");
 
+const roleIds = Object.keys(PARTY_ROLES) as [keyof typeof PARTY_ROLES, ...(keyof typeof PARTY_ROLES)[]];
+
+/**
+ * Le Cortège : liste JSON envoyée par le formulaire.
+ * Chaîne vide = réservation individuelle.
+ */
+const party = z
+  .string()
+  .max(2000, "Groupe invalide.")
+  .transform((value, ctx): PartyMember[] | null => {
+    if (value === "") return null;
+    let raw: unknown;
+    try {
+      raw = JSON.parse(value);
+    } catch {
+      ctx.addIssue({ code: "custom", message: "Groupe invalide." });
+      return z.NEVER;
+    }
+    const parsed = z
+      .array(z.object({ role: z.enum(roleIds), packId: z.string().max(40).nullable() }).strict())
+      .min(2, "Ajoutez au moins une personne au cortège.")
+      .max(site.cortege.maxMembers, `${site.cortege.maxMembers} personnes maximum.`)
+      .safeParse(raw);
+    if (!parsed.success) {
+      ctx.addIssue({ code: "custom", message: parsed.error.issues[0]?.message ?? "Groupe invalide." });
+      return z.NEVER;
+    }
+    const members = parsed.data.map((m) => ({
+      role: m.role,
+      packId: m.packId && getPack(m.packId) ? m.packId : null,
+    }));
+    if (members.filter((m) => m.role === "marie").length > 1) {
+      ctx.addIssue({ code: "custom", message: "Un seul marié par cortège." });
+      return z.NEVER;
+    }
+    return members;
+  });
+
 /** Formulaire public de demande de rendez-vous. */
 export const requestSchema = z.object({
   name,
@@ -84,6 +123,7 @@ export const requestSchema = z.object({
     .refine((value) => value === "" || bookingSlots().includes(value), "Choisissez une heure.")
     .transform((value) => (value === "" ? null : value)),
   message: optionalText(300),
+  party,
 });
 
 export type RequestInput = z.infer<typeof requestSchema>;

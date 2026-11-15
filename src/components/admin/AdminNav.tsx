@@ -25,9 +25,9 @@ export function AdminNav() {
   return (
     <header className="sticky top-0 z-40 border-b border-line-soft bg-ink/95 backdrop-blur-md">
       <div className="container-x flex h-14 items-center justify-between gap-4">
-        <Link href="/admin" className="font-display text-xl tracking-[0.12em]">
-          Sans <span className="display-italic">Façon</span>
-          <span className="ml-3 hidden text-[0.625rem] uppercase tracking-[0.26em] text-stone sm:inline">
+        <Link href="/admin" className="font-display text-[1.4rem] leading-none">
+          Sans Façon
+          <span className="ml-3 hidden font-sans text-[0.625rem] uppercase tracking-[0.2em] text-stone sm:inline">
             Espace gérant
           </span>
         </Link>

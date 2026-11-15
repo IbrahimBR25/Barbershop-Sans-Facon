@@ -8,6 +8,7 @@ import { ConfirmForm } from "@/components/admin/ConfirmForm";
 import { CopyField } from "@/components/admin/CopyField";
 import { PageLoading } from "@/components/admin/PageLoading";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { PartyList } from "@/components/site/PartyList";
 import { PhoneIcon, WhatsAppIcon } from "@/components/ui/icons";
 import { requireAdmin } from "@/lib/auth";
 import { getById } from "@/lib/bookings";
@@ -93,10 +94,21 @@ async function Detail({
             </dd>
           </div>
         )}
-        <div className="flex flex-col gap-1 py-4 sm:flex-row sm:justify-between">
-          <dt className="text-[0.6875rem] uppercase tracking-[0.22em] text-stone">Formule</dt>
-          <dd>{pack ? pack.name : "À définir"}</dd>
-        </div>
+        {booking.party ? (
+          <div className="flex flex-col gap-2 py-4 sm:flex-row sm:justify-between sm:gap-8">
+            <dt className="text-[0.6875rem] uppercase tracking-[0.22em] text-stone">
+              {site.cortege.title} · {booking.party.length} personnes
+            </dt>
+            <dd>
+              <PartyList party={booking.party} />
+            </dd>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:justify-between">
+            <dt className="text-[0.6875rem] uppercase tracking-[0.22em] text-stone">Formule</dt>
+            <dd>{pack ? pack.name : "À définir"}</dd>
+          </div>
+        )}
         {booking.message && (
           <div className="flex flex-col gap-1 py-4 sm:flex-row sm:justify-between sm:gap-8">
             <dt className="shrink-0 text-[0.6875rem] uppercase tracking-[0.22em] text-stone">Précision du client</dt>

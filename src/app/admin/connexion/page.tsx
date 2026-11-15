@@ -21,9 +21,7 @@ export default function LoginPage() {
       <div className="container-x max-w-md py-16 text-center">
         <Monogram />
         <p className="eyebrow mt-6">Espace gérant</p>
-        <h1 className="mt-4 text-4xl font-light">
-          Sans <span className="display-italic">Façon</span>
-        </h1>
+        <h1 className="mt-4 text-5xl">Sans Façon</h1>
         <LoginForm />
       </div>
     </main>

@@ -1,5 +1,6 @@
 import { getPack, site } from "@/config/site";
 import { formatSlot } from "@/lib/dates";
+import { memberLabel, type PartyMember } from "@/lib/party";
 import { formatPhone, phoneDigits } from "@/lib/phone";
 
 type BookingForMessage = {
@@ -10,6 +11,7 @@ type BookingForMessage = {
   requestedDate: string;
   requestedTime: string | null;
   message: string | null;
+  party?: PartyMember[] | null;
 };
 
 function waLink(toE164: string, text: string): string {
@@ -25,7 +27,12 @@ export function requestMessage(b: BookingForMessage): string {
     "",
     `• Nom : ${b.name}`,
     `• Téléphone : ${formatPhone(b.phone)}`,
-    `• Formule : ${pack ? pack.name : "À définir ensemble"}`,
+    ...(b.party
+      ? [
+          `• ${site.cortege.title} : ${b.party.length} personnes`,
+          ...b.party.map((m) => `   – ${memberLabel(m)}`),
+        ]
+      : [`• Formule : ${pack ? pack.name : "À définir ensemble"}`]),
     `• Créneau souhaité : ${formatSlot(b.requestedDate, b.requestedTime)}`,
   ];
   if (b.message) lines.push(`• Précision : ${b.message}`);
